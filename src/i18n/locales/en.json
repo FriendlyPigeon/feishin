@@ -502,7 +502,11 @@
             "topSongsPersonal": "Personal",
             "favoriteSongsFrom": "Favorite songs from {{title}}",
             "viewAll": "View all",
-            "viewAllTracks": "View all $t(entity.track, {\"count\": 2})"
+            "viewAllTracks": "View all $t(entity.track, {\"count\": 2})",
+            "lidarrMissingAlbums": "Not in library",
+            "lidarrError": "Could not load Lidarr discography",
+            "lidarrNotFound": "Artist not found in Lidarr",
+            "lidarrAllAlbumsInLibrary": "All Lidarr albums are already in your library"
         },
         "albumArtistList": {
             "title": "$t(entity.albumArtist, {\"count\": 2})"

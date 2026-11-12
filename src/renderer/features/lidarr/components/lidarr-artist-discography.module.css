@@ -1,0 +1,24 @@
+.section-title,
+.album-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.album-section-divider {
+    flex: 1;
+    height: 1px;
+    margin-left: 1rem;
+    background: rgb(255 255 255 / 10%);
+}
+
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--items-per-row), minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.album-grid-item {
+    min-width: 0;
+}

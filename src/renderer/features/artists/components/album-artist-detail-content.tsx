@@ -24,6 +24,7 @@ import { ItemTableListColumn } from '/@/renderer/components/item-list/item-table
 import { ItemControls } from '/@/renderer/components/item-list/types';
 import { artistsQueries } from '/@/renderer/features/artists/api/artists-api';
 import { AlbumArtistGridCarousel } from '/@/renderer/features/artists/components/album-artist-grid-carousel';
+import { LidarrArtistDiscography } from '/@/renderer/features/lidarr/components/lidarr-artist-discography';
 import { useIsPlayerFetching, usePlayer } from '/@/renderer/features/player/context/player-context';
 import {
     ListConfigMenu,
@@ -1340,6 +1341,10 @@ export const AlbumArtistDetailContent = ({
                         />
                     )}
                     <ArtistAlbums albumsQuery={albumsQuery} order={itemOrder.recentAlbums} />
+                    <LidarrArtistDiscography
+                        artistName={detailQuery.data?.name || ''}
+                        libraryAlbums={albumsQuery.data?.items || []}
+                    />
                     {enabledItem.similarArtists && (
                         <AlbumArtistMetadataSimilarArtists
                             order={itemOrder.similarArtists}
