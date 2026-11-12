@@ -58,6 +58,7 @@ Scope is optional. When present, it must be one of (see `commitlint.config.mjs` 
 |-------|---------|
 | `api` | Multi-backend controller / normalize / query keys with no single feature owner |
 | `i18n` | Locales / Weblate |
+| `lidarr` | Lidarr integration (settings, API client, actions) |
 | `ci` | GitHub Actions / workflows |
 | `deps` | Dependency bumps |
 | `release` | Versioning, changelogs, publish / packaging config |

@@ -11,6 +11,7 @@ const config = {
                 'ci',
                 'deps',
                 'i18n',
+                'lidarr',
                 'library',
                 'lyrics',
                 'player',

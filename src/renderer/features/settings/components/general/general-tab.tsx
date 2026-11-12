@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 
+import { LidarrSettingsSection } from '/@/renderer/features/lidarr/components/lidarr-settings-section';
 import { ApplicationSettings } from '/@/renderer/features/settings/components/general/application-settings';
 import { ControlSettings } from '/@/renderer/features/settings/components/general/control-settings';
 import { ExternalLinksSettings } from '/@/renderer/features/settings/components/general/external-links-settings';
@@ -24,6 +25,7 @@ export const GeneralTab = memo(() => {
             { component: ThemeSettings, key: 'theme' },
             { component: ApplicationSettings, key: 'application' },
             { component: ExternalLinksSettings, key: 'externalLinks' },
+            { component: LidarrSettingsSection, key: 'lidarr' },
             { component: ControlSettings, key: 'control' },
             { component: SidebarSettings, key: 'sidebar' },
             { component: ScrobbleSettings, key: 'scrobble' },

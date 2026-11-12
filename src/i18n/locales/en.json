@@ -253,7 +253,12 @@
         "serverRequired": "Server required",
         "sessionExpiredError": "Your session has expired",
         "systemFontError": "An error occurred when trying to get system fonts",
-        "settingsSyncError": "Discrepancies were found between the settings in the renderer and the main process. Restart the application to apply the changes"
+        "settingsSyncError": "Discrepancies were found between the settings in the renderer and the main process. Restart the application to apply the changes",
+        "lidarr": {
+            "missingCredentials": "Lidarr URL and API key are required",
+            "notFound": "Lidarr endpoint not found - check the URL",
+            "unauthorized": "Invalid Lidarr API key"
+        }
     },
     "filter": {
         "album": "$t(entity.album, {\"count\": 1})",
@@ -1326,7 +1331,20 @@
         "microtonalPitchControls": "Microtonal pitch controls",
         "microtonalPitchControls_description": "Add more pitch controls to go between semi-tones",
         "sidebarImageEnabled": "Expand album art button",
-        "sidebarImageEnabled_description": "Show a button on the player bar's album art to expand it into the sidebar. Disabling this also hides the button and collapses the album art if it is currently expanded"
+        "sidebarImageEnabled_description": "Show a button on the player bar's album art to expand it into the sidebar. Disabling this also hides the button and collapses the album art if it is currently expanded",
+        "lidarr": {
+            "title": "Lidarr",
+            "enabled": "Enable Lidarr integration",
+            "enabled_description": "Show missing albums and add-to-Lidarr actions throughout the app",
+            "url": "Lidarr URL",
+            "url_description": "The base URL of your Lidarr instance, e.g. http://localhost:8686",
+            "apiKey": "API key",
+            "apiKey_description": "Your Lidarr API key (Settings > General > API Key)",
+            "testConnection": "Test connection",
+            "testConnection_description": "Verify that Feishin can reach Lidarr",
+            "connectionSuccess": "Connected to Lidarr {{version}}",
+            "connectionOk": "Connected"
+        }
     },
     "table": {
         "column": {
