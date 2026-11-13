@@ -1,13 +1,14 @@
 export interface LidarrAddArtistBody {
     addOptions?: {
+        albumsToMonitor?: string[];
         ignoreExistingAlbums?: boolean;
         monitor?: string;
+        monitored?: boolean;
         searchForMissingAlbums?: boolean;
     };
     artistName: string;
     foreignArtistId: string;
     metadataProfileId: number;
-    monitor: string;
     monitored: boolean;
     qualityProfileId: number;
     rootFolderPath: string;
@@ -37,7 +38,7 @@ export interface LidarrArtistLookup {
 }
 
 export interface LidarrCommandBody {
-    albumId?: number;
+    albumIds?: number[];
     artistId?: number;
     name: string;
 }
@@ -52,6 +53,11 @@ export interface LidarrImage {
 export interface LidarrMetadataProfile {
     id: number;
     name: string;
+}
+
+export interface LidarrMonitorAlbumsBody {
+    albumIds: number[];
+    monitored: boolean;
 }
 
 export interface LidarrQualityProfile {

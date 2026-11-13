@@ -15,20 +15,34 @@ export interface LidarrConnectionStatus {
     isTesting: boolean;
 }
 
+export interface LidarrDefaults {
+    metadataProfileId: null | number;
+    qualityProfileId: null | number;
+    rootFolderPath: null | string;
+}
+
 export interface LidarrSlice extends LidarrState {
     actions: {
         setConfig: (config: Partial<LidarrConfig>) => void;
+        setDefaults: (defaults: Partial<LidarrDefaults>) => void;
         setStatus: (status: LidarrConnectionStatus) => void;
     };
 }
 
-export interface LidarrState extends LidarrConfig {
+export interface LidarrState extends LidarrConfig, LidarrDefaults {
     status: LidarrConnectionStatus;
 }
+
+const initialDefaults: LidarrDefaults = {
+    metadataProfileId: null,
+    qualityProfileId: null,
+    rootFolderPath: null,
+};
 
 const initialState: LidarrState = {
     apiKey: '',
     enabled: false,
+    ...initialDefaults,
     status: {
         error: null,
         isReachable: null,
@@ -46,10 +60,16 @@ export const useLidarrStore = createWithEqualityFn<LidarrSlice>()(
                     setConfig: (config) => {
                         set((state) => {
                             Object.assign(state, config);
-                            // Reset reachability when credentials change.
+                            // Reset reachability and defaults when credentials change.
                             if (config.url !== undefined || config.apiKey !== undefined) {
                                 state.status = { ...initialState.status };
+                                Object.assign(state, initialDefaults);
                             }
+                        });
+                    },
+                    setDefaults: (defaults) => {
+                        set((state) => {
+                            Object.assign(state, defaults);
                         });
                     },
                     setStatus: (status) => {
@@ -76,6 +96,13 @@ export const useLidarrConfig = (): LidarrConfig =>
         apiKey: state.apiKey,
         enabled: state.enabled,
         url: state.url,
+    }));
+
+export const useLidarrDefaults = (): LidarrDefaults =>
+    useLidarrStore((state) => ({
+        metadataProfileId: state.metadataProfileId,
+        qualityProfileId: state.qualityProfileId,
+        rootFolderPath: state.rootFolderPath,
     }));
 
 export const useLidarrStatus = () => useLidarrStore((state) => state.status);

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import styles from './lidarr-artist-discography.module.css';
@@ -8,26 +8,43 @@ import {
     isLidarrAlbumInLibrary,
     normalizeLidarrAlbum,
 } from '/@/renderer/api/lidarr/lidarr-normalize';
+import { LidarrAlbum } from '/@/renderer/api/lidarr/lidarr-types';
 import { MemoizedItemCard } from '/@/renderer/components/item-card/item-card';
 import { useGridRows } from '/@/renderer/components/item-list/helpers/use-grid-rows';
 import { useArtistAlbumsGrouped } from '/@/renderer/features/artists/hooks/use-artist-albums-grouped';
 import { lidarrQueries } from '/@/renderer/features/lidarr/api/lidarr-queries';
-import { useLidarrConfig, useLidarrEnabled } from '/@/renderer/features/lidarr/store/lidarr.store';
+import {
+    useAddArtistMutation,
+    useMonitorAlbumMutation,
+} from '/@/renderer/features/lidarr/mutations/lidarr-mutations';
+import {
+    useLidarrConfig,
+    useLidarrDefaults,
+    useLidarrEnabled,
+} from '/@/renderer/features/lidarr/store/lidarr.store';
+import { PlayButton } from '/@/renderer/features/shared/components/play-button';
 import { useContainerQuery } from '/@/renderer/hooks';
 import { Badge } from '/@/shared/components/badge/badge';
+import { Button } from '/@/shared/components/button/button';
 import { Center } from '/@/shared/components/center/center';
 import { Grid } from '/@/shared/components/grid/grid';
 import { Group } from '/@/shared/components/group/group';
+import { Icon } from '/@/shared/components/icon/icon';
 import { Skeleton } from '/@/shared/components/skeleton/skeleton';
+import { Spinner } from '/@/shared/components/spinner/spinner';
 import { Stack } from '/@/shared/components/stack/stack';
 import { TextTitle } from '/@/shared/components/text-title/text-title';
 import { Text } from '/@/shared/components/text/text';
+import { Tooltip } from '/@/shared/components/tooltip/tooltip';
 import { Album, LibraryItem } from '/@/shared/types/domain-types';
 import { ItemListKey } from '/@/shared/types/types';
 
 interface LidarrAlbumSectionProps {
     albums: Album[];
     itemsPerRow: number;
+    lidarrAlbumByForeignId: Map<string, LidarrAlbum>;
+    onAddAlbum: (album: Album) => void;
+    pendingAlbumId: null | number;
     releaseType: string;
     title: React.ReactNode | string;
 }
@@ -43,14 +60,64 @@ const getItemsPerRow = (cq: ReturnType<typeof useContainerQuery>) => {
     return 2;
 };
 
+const LidarrMissingAlbumCard = memo(function LidarrMissingAlbumCard({
+    album,
+    lidarrAlbum,
+    onAddAlbum,
+    pendingAlbumId,
+}: {
+    album: Album;
+    lidarrAlbum?: LidarrAlbum;
+    onAddAlbum: (album: Album) => void;
+    pendingAlbumId: null | number;
+}) {
+    const { t } = useTranslation();
+    const rows = useGridRows(LibraryItem.ALBUM, ItemListKey.ALBUM);
+
+    const isMonitored = lidarrAlbum?.monitored ?? false;
+    const isPending = Boolean(lidarrAlbum?.id && pendingAlbumId === lidarrAlbum.id);
+
+    return (
+        <div className={styles.albumCard}>
+            <MemoizedItemCard
+                data={album}
+                enableDrag={false}
+                enableExpansion
+                enableNavigation={false}
+                itemType={LibraryItem.ALBUM}
+                rows={rows}
+                type="poster"
+            />
+            <div className={styles.albumCardOverlay}>
+                {isMonitored ? (
+                    <Badge variant="filled">{t('action.monitoredInLidarr')}</Badge>
+                ) : (
+                    <Tooltip label={t('action.addToLidarr')}>
+                        <PlayButton
+                            icon="plus"
+                            loading={isPending}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onAddAlbum(album);
+                            }}
+                        />
+                    </Tooltip>
+                )}
+            </div>
+        </div>
+    );
+});
+
 const LidarrAlbumSection = memo(function LidarrAlbumSection({
     albums,
     itemsPerRow,
+    lidarrAlbumByForeignId,
+    onAddAlbum,
+    pendingAlbumId,
     releaseType,
     title,
 }: LidarrAlbumSectionProps) {
-    const rows = useGridRows(LibraryItem.ALBUM, ItemListKey.ALBUM);
-
     return (
         <Stack gap="md">
             <div className={styles.albumSectionTitle}>
@@ -71,17 +138,13 @@ const LidarrAlbumSection = memo(function LidarrAlbumSection({
                 }
             >
                 {albums.map((album) => (
-                    <div className={styles.albumGridItem} key={`${releaseType}-${album.id}`}>
-                        <MemoizedItemCard
-                            data={album}
-                            enableDrag={false}
-                            enableExpansion
-                            enableNavigation={false}
-                            itemType={LibraryItem.ALBUM}
-                            rows={rows}
-                            type="poster"
-                        />
-                    </div>
+                    <LidarrMissingAlbumCard
+                        album={album}
+                        key={`${releaseType}-${album.id}`}
+                        lidarrAlbum={lidarrAlbumByForeignId.get(album.id)}
+                        onAddAlbum={onAddAlbum}
+                        pendingAlbumId={pendingAlbumId}
+                    />
                 ))}
             </div>
         </Stack>
@@ -100,6 +163,9 @@ export const LidarrArtistDiscography = memo(
         const { t } = useTranslation();
         const enabled = useLidarrEnabled();
         const lidarrConfig = useLidarrConfig();
+        const defaults = useLidarrDefaults();
+        const addArtistMutation = useAddArtistMutation();
+        const monitorAlbumMutation = useMonitorAlbumMutation();
 
         const shouldUseLidarrLookup = enabled && !artistMbid && artistName.length > 0;
 
@@ -144,6 +210,12 @@ export const LidarrArtistDiscography = memo(
             }),
         });
 
+        const lidarrAlbumByForeignId = useMemo(() => {
+            return new Map(
+                (albumsByArtistQuery.data || []).map((album) => [album.foreignAlbumId, album]),
+            );
+        }, [albumsByArtistQuery.data]);
+
         const missingAlbums = useMemo(() => {
             if (!lidarrArtistId) {
                 return [];
@@ -182,6 +254,39 @@ export const LidarrArtistDiscography = memo(
         });
 
         const itemsPerRow = getItemsPerRow(cq);
+
+        const canAddArtist = Boolean(
+            effectiveArtistMbid &&
+            defaults.rootFolderPath &&
+            defaults.qualityProfileId &&
+            defaults.metadataProfileId,
+        );
+
+        const handleAddArtist = useCallback(() => {
+            if (!effectiveArtistMbid) {
+                return;
+            }
+
+            addArtistMutation.mutate({
+                artistMbid: effectiveArtistMbid,
+                artistName,
+            });
+        }, [addArtistMutation, artistName, effectiveArtistMbid]);
+
+        const handleAddAlbum = useCallback(
+            (album: Album) => {
+                const lidarrAlbum = lidarrAlbumByForeignId.get(album.id);
+                if (!lidarrAlbum?.id || !lidarrArtistId) {
+                    return;
+                }
+
+                monitorAlbumMutation.mutate({
+                    albumId: lidarrAlbum.id,
+                    artistId: lidarrArtistId,
+                });
+            },
+            [lidarrAlbumByForeignId, lidarrArtistId, monitorAlbumMutation],
+        );
 
         if (!enabled) {
             return null;
@@ -227,11 +332,28 @@ export const LidarrArtistDiscography = memo(
         if (!effectiveArtistMbid || !lidarrArtistId) {
             return (
                 <Grid.Col order={order} span={12}>
-                    <Center py="xl">
+                    <Stack align="center" gap="sm" py="xl">
                         <Text isMuted size="sm">
                             {t('page.albumArtistDetail.lidarrNotFound')}
                         </Text>
-                    </Center>
+                        {effectiveArtistMbid && (
+                            <Button
+                                disabled={!canAddArtist || addArtistMutation.isPending}
+                                leftSection={
+                                    addArtistMutation.isPending ? (
+                                        <Spinner size={16} />
+                                    ) : (
+                                        <Icon icon="plus" size="sm" />
+                                    )
+                                }
+                                onClick={handleAddArtist}
+                                size="compact-sm"
+                                variant="subtle"
+                            >
+                                {t('action.addArtistToLidarr')}
+                            </Button>
+                        )}
+                    </Stack>
                 </Grid.Col>
             );
         }
@@ -268,6 +390,13 @@ export const LidarrArtistDiscography = memo(
                                         albums={albums}
                                         itemsPerRow={itemsPerRow}
                                         key={releaseType}
+                                        lidarrAlbumByForeignId={lidarrAlbumByForeignId}
+                                        onAddAlbum={handleAddAlbum}
+                                        pendingAlbumId={
+                                            monitorAlbumMutation.isPending
+                                                ? (monitorAlbumMutation.variables?.albumId ?? null)
+                                                : null
+                                        }
                                         releaseType={releaseType}
                                         title={displayName}
                                     />

@@ -22,3 +22,32 @@
 .album-grid-item {
     min-width: 0;
 }
+
+.album-card {
+    position: relative;
+    height: 100%;
+}
+
+.album-card-overlay {
+    position: absolute;
+    top: var(--theme-spacing-md);
+    right: var(--theme-spacing-md);
+    left: var(--theme-spacing-md);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    pointer-events: none;
+    border-radius: var(--theme-radius-md);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.album-card:hover .album-card-overlay {
+    opacity: 1;
+}
+
+.album-card-overlay > * {
+    pointer-events: auto;
+}

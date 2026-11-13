@@ -6,6 +6,7 @@ import {
     LidarrArtist,
     LidarrCommandBody,
     LidarrMetadataProfile,
+    LidarrMonitorAlbumsBody,
     LidarrQualityProfile,
     LidarrRootFolder,
     LidarrSystemStatus,
@@ -54,9 +55,7 @@ export const lidarrClient = {
             });
             return response.data;
         } catch (error) {
-            const message = handleError(error, 'Failed to add artist to Lidarr');
-            toast.error({ message });
-            throw new Error(message);
+            throw new Error(handleError(error, 'Failed to add artist to Lidarr'));
         }
     },
     getAlbum: async (url: string, apiKey: string, albumId: number): Promise<LidarrAlbum> => {
@@ -188,6 +187,27 @@ export const lidarrClient = {
             throw new Error(message);
         }
     },
+    monitorAlbums: async (
+        url: string,
+        apiKey: string,
+        body: LidarrMonitorAlbumsBody,
+    ): Promise<LidarrAlbum[]> => {
+        try {
+            const response = await axios.put<LidarrAlbum[]>(
+                `${getBaseUrl(url)}/album/monitor`,
+                body,
+                {
+                    headers: getHeaders(apiKey),
+                },
+            );
+            return response.data;
+        } catch (error) {
+            throw new Error(handleError(error, 'Failed to monitor Lidarr albums'));
+        }
+    },
+    searchAlbums: async (url: string, apiKey: string, albumIds: number[]): Promise<unknown> => {
+        return lidarrClient.sendCommand(url, apiKey, { albumIds, name: 'AlbumSearch' });
+    },
     sendCommand: async (url: string, apiKey: string, body: LidarrCommandBody): Promise<unknown> => {
         try {
             const response = await axios.post<unknown>(`${getBaseUrl(url)}/command`, body, {
@@ -195,9 +215,7 @@ export const lidarrClient = {
             });
             return response.data;
         } catch (error) {
-            const message = handleError(error, 'Failed to send Lidarr command');
-            toast.error({ message });
-            throw new Error(message);
+            throw new Error(handleError(error, 'Failed to send Lidarr command'));
         }
     },
     testConnection: async (url: string, apiKey: string): Promise<LidarrSystemStatus> => {

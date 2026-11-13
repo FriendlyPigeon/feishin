@@ -37,6 +37,9 @@
         "viewPlaylists": "View $t(entity.playlist, {\"count\": 2})",
         "viewMore": "View more",
         "openApplicationDirectory": "Open application directory",
+        "addArtistToLidarr": "Add artist to Lidarr",
+        "addToLidarr": "Add to Lidarr",
+        "monitoredInLidarr": "Monitored",
         "openIn": {
             "lastfm": "Open in Last.fm",
             "listenbrainz": "Open in ListenBrainz",
@@ -256,8 +259,11 @@
         "settingsSyncError": "Discrepancies were found between the settings in the renderer and the main process. Restart the application to apply the changes",
         "lidarr": {
             "missingCredentials": "Lidarr URL and API key are required",
+            "missingDefaults": "Choose a root folder and profiles in Lidarr settings first",
             "notFound": "Lidarr endpoint not found - check the URL",
-            "unauthorized": "Invalid Lidarr API key"
+            "unauthorized": "Invalid Lidarr API key",
+            "addArtistFailed": "Failed to add artist to Lidarr",
+            "addAlbumFailed": "Failed to add album to Lidarr"
         }
     },
     "filter": {
@@ -1347,7 +1353,22 @@
             "testConnection": "Test connection",
             "testConnection_description": "Verify that Feishin can reach Lidarr",
             "connectionSuccess": "Connected to Lidarr {{version}}",
-            "connectionOk": "Connected"
+            "connectionOk": "Connected",
+            "rootFolder": "Root folder",
+            "rootFolder_description": "Where Lidarr will store downloaded music",
+            "rootFolder_placeholder": "Select a root folder",
+            "qualityProfile": "Quality profile",
+            "qualityProfile_description": "The quality profile to use when adding artists",
+            "qualityProfile_placeholder": "Select a quality profile",
+            "metadataProfile": "Metadata profile",
+            "metadataProfile_description": "The metadata profile to use when adding artists",
+            "metadataProfile_placeholder": "Select a metadata profile"
+        }
+    },
+    "success": {
+        "lidarr": {
+            "artistAdded": "Artist added to Lidarr",
+            "albumAdded": "Album added to Lidarr"
         }
     },
     "table": {
