@@ -505,7 +505,7 @@
             "viewAllTracks": "View all $t(entity.track, {\"count\": 2})",
             "lidarrMissingAlbums": "Not in library",
             "lidarrError": "Could not load Lidarr discography",
-            "lidarrNotFound": "Artist not found in Lidarr",
+            "lidarrNotFound": "Artist not found in Lidarr. Add this artist to Lidarr to see missing albums.",
             "lidarrAllAlbumsInLibrary": "All Lidarr albums are already in your library"
         },
         "albumArtistList": {

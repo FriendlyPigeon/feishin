@@ -145,6 +145,7 @@ export const useItemImageRequest = (args: UseItemImageUrlProps) => {
         if (imageUrl) {
             return {
                 cacheKey: imageUrl,
+                skipFetch: imageUrl.includes('apikey='),
                 url: imageUrl,
             } satisfies ImageRequest;
         }
@@ -183,6 +184,7 @@ export function getItemImageRequest(args: UseItemImageUrlProps) {
     if (imageUrl) {
         return {
             cacheKey: imageUrl,
+            skipFetch: imageUrl.includes('apikey='),
             url: imageUrl,
         } satisfies ImageRequest;
     }

@@ -1342,8 +1342,10 @@ export const AlbumArtistDetailContent = ({
                     )}
                     <ArtistAlbums albumsQuery={albumsQuery} order={itemOrder.recentAlbums} />
                     <LidarrArtistDiscography
+                        artistMbid={detailQuery.data?.mbz || undefined}
                         artistName={detailQuery.data?.name || ''}
                         libraryAlbums={albumsQuery.data?.items || []}
+                        order={itemOrder.recentAlbums}
                     />
                     {enabledItem.similarArtists && (
                         <AlbumArtistMetadataSimilarArtists

@@ -12,7 +12,7 @@ import { MemoizedItemCard } from '/@/renderer/components/item-card/item-card';
 import { useGridRows } from '/@/renderer/components/item-list/helpers/use-grid-rows';
 import { useArtistAlbumsGrouped } from '/@/renderer/features/artists/hooks/use-artist-albums-grouped';
 import { lidarrQueries } from '/@/renderer/features/lidarr/api/lidarr-queries';
-import { useLidarrEnabled } from '/@/renderer/features/lidarr/store/lidarr.store';
+import { useLidarrConfig, useLidarrEnabled } from '/@/renderer/features/lidarr/store/lidarr.store';
 import { useContainerQuery } from '/@/renderer/hooks';
 import { Badge } from '/@/shared/components/badge/badge';
 import { Center } from '/@/shared/components/center/center';
@@ -89,30 +89,34 @@ const LidarrAlbumSection = memo(function LidarrAlbumSection({
 });
 
 interface LidarrArtistDiscographyProps {
+    artistMbid?: string;
     artistName: string;
     libraryAlbums: Album[];
+    order?: number;
 }
 
 export const LidarrArtistDiscography = memo(
-    ({ artistName, libraryAlbums }: LidarrArtistDiscographyProps) => {
+    ({ artistMbid, artistName, libraryAlbums, order }: LidarrArtistDiscographyProps) => {
         const { t } = useTranslation();
         const enabled = useLidarrEnabled();
+        const lidarrConfig = useLidarrConfig();
+
+        const shouldUseLidarrLookup = enabled && !artistMbid && artistName.length > 0;
 
         const artistLookupQuery = useQuery({
             ...lidarrQueries.artistLookup({
-                enabled,
+                enabled: shouldUseLidarrLookup,
                 term: artistName,
             }),
             staleTime: 1000 * 60 * 5,
         });
 
-        const lidarrArtist = useMemo(() => {
+        const lidarrLookupArtist = useMemo(() => {
             const results = artistLookupQuery.data || [];
             if (results.length === 0) {
                 return null;
             }
 
-            // Prefer an exact name match, otherwise use the first result.
             const normalizedArtistName = artistName.toLowerCase().trim();
             const exactMatch = results.find(
                 (artist) => artist.artistName.toLowerCase().trim() === normalizedArtistName,
@@ -120,20 +124,52 @@ export const LidarrArtistDiscography = memo(
             return exactMatch || results[0];
         }, [artistLookupQuery.data, artistName]);
 
+        const effectiveArtistMbid = artistMbid || lidarrLookupArtist?.foreignArtistId || '';
+
+        const artistByMbidQuery = useQuery({
+            ...lidarrQueries.artistByMbid({
+                enabled: enabled && effectiveArtistMbid.length > 0,
+                mbid: effectiveArtistMbid,
+            }),
+            staleTime: 1000 * 60 * 5,
+        });
+
+        const lidarrArtist = artistByMbidQuery.data;
+        const lidarrArtistId = lidarrArtist?.id && lidarrArtist.id > 0 ? lidarrArtist.id : null;
+
+        const albumsByArtistQuery = useQuery({
+            ...lidarrQueries.albumsByArtist({
+                artistId: lidarrArtistId || 0,
+                enabled: enabled && Boolean(lidarrArtistId),
+            }),
+        });
+
         const missingAlbums = useMemo(() => {
-            if (!lidarrArtist?.albums) {
+            if (!lidarrArtistId) {
                 return [];
             }
 
-            return lidarrArtist.albums
-                .map((album) => normalizeLidarrAlbum(album, lidarrArtist))
+            const albums = albumsByArtistQuery.data || [];
+            return albums
+                .map((album) =>
+                    normalizeLidarrAlbum(
+                        album,
+                        lidarrArtist || undefined,
+                        lidarrConfig.url,
+                        lidarrConfig.apiKey,
+                    ),
+                )
                 .filter((album) => !isLidarrAlbumInLibrary(album, libraryAlbums));
-        }, [lidarrArtist, libraryAlbums]);
+        }, [
+            lidarrArtistId,
+            albumsByArtistQuery.data,
+            lidarrArtist,
+            lidarrConfig.apiKey,
+            lidarrConfig.url,
+            libraryAlbums,
+        ]);
 
-        const { releaseTypeEntries } = useArtistAlbumsGrouped(
-            missingAlbums,
-            lidarrArtist?.foreignArtistId || '',
-        );
+        const { releaseTypeEntries } = useArtistAlbumsGrouped(missingAlbums, effectiveArtistMbid);
 
         const cq = useContainerQuery({
             '2xl': 1280,
@@ -151,9 +187,19 @@ export const LidarrArtistDiscography = memo(
             return null;
         }
 
-        if (artistLookupQuery.isLoading) {
+        const isLookupLoading = shouldUseLidarrLookup && artistLookupQuery.isLoading;
+        const isArtistLoading = effectiveArtistMbid.length > 0 && artistByMbidQuery.isLoading;
+        const isAlbumsLoading = Boolean(lidarrArtistId) && albumsByArtistQuery.isLoading;
+        const isLoading = isLookupLoading || isArtistLoading || isAlbumsLoading;
+
+        const isLookupError = shouldUseLidarrLookup && artistLookupQuery.isError;
+        const isArtistError = effectiveArtistMbid.length > 0 && artistByMbidQuery.isError;
+        const isAlbumsError = Boolean(lidarrArtistId) && albumsByArtistQuery.isError;
+        const isError = isLookupError || isArtistError || isAlbumsError;
+
+        if (isLoading) {
             return (
-                <Grid.Col span={12}>
+                <Grid.Col order={order} span={12}>
                     <Stack gap="md">
                         <Skeleton enableAnimation height="2rem" width="30%" />
                         <Group gap="md">
@@ -166,9 +212,9 @@ export const LidarrArtistDiscography = memo(
             );
         }
 
-        if (artistLookupQuery.isError) {
+        if (isError) {
             return (
-                <Grid.Col span={12}>
+                <Grid.Col order={order} span={12}>
                     <Center py="xl">
                         <Text isMuted size="sm">
                             {t('page.albumArtistDetail.lidarrError')}
@@ -178,9 +224,9 @@ export const LidarrArtistDiscography = memo(
             );
         }
 
-        if (!lidarrArtist) {
+        if (!effectiveArtistMbid || !lidarrArtistId) {
             return (
-                <Grid.Col span={12}>
+                <Grid.Col order={order} span={12}>
                     <Center py="xl">
                         <Text isMuted size="sm">
                             {t('page.albumArtistDetail.lidarrNotFound')}
@@ -192,7 +238,7 @@ export const LidarrArtistDiscography = memo(
 
         if (missingAlbums.length === 0) {
             return (
-                <Grid.Col span={12}>
+                <Grid.Col order={order} span={12}>
                     <Center py="xl">
                         <Text isMuted size="sm">
                             {t('page.albumArtistDetail.lidarrAllAlbumsInLibrary')}
@@ -203,7 +249,7 @@ export const LidarrArtistDiscography = memo(
         }
 
         return (
-            <Grid.Col span={12}>
+            <Grid.Col order={order} span={12}>
                 <Stack gap="md">
                     <div className={styles.sectionTitle}>
                         <Group gap="md">
@@ -214,19 +260,21 @@ export const LidarrArtistDiscography = memo(
                         </Group>
                         <div className={styles.albumSectionDivider} />
                     </div>
-                    {cq.isCalculated && (
-                        <Stack gap="xl">
-                            {releaseTypeEntries.map(({ albums, displayName, releaseType }) => (
-                                <LidarrAlbumSection
-                                    albums={albums}
-                                    itemsPerRow={itemsPerRow}
-                                    key={releaseType}
-                                    releaseType={releaseType}
-                                    title={displayName}
-                                />
-                            ))}
-                        </Stack>
-                    )}
+                    <div ref={cq.ref}>
+                        {cq.isCalculated && (
+                            <Stack gap="xl">
+                                {releaseTypeEntries.map(({ albums, displayName, releaseType }) => (
+                                    <LidarrAlbumSection
+                                        albums={albums}
+                                        itemsPerRow={itemsPerRow}
+                                        key={releaseType}
+                                        releaseType={releaseType}
+                                        title={displayName}
+                                    />
+                                ))}
+                            </Stack>
+                        )}
+                    </div>
                 </Stack>
             </Grid.Col>
         );

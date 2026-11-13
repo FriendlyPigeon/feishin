@@ -15,9 +15,19 @@ interface AlbumLookupArgs {
     term: string;
 }
 
+interface AlbumsByArtistArgs {
+    artistId: number;
+    enabled?: boolean;
+}
+
 interface ArtistArgs {
     artistId: number;
     enabled?: boolean;
+}
+
+interface ArtistByMbidArgs {
+    enabled?: boolean;
+    mbid: string;
 }
 
 interface ArtistLookupArgs {
@@ -28,7 +38,9 @@ interface ArtistLookupArgs {
 export const lidarrQueryKeys = {
     album: (albumId: number) => [LIDARR_QUERY_KEY, 'album', albumId] as const,
     albumLookup: (term: string) => [LIDARR_QUERY_KEY, 'albumLookup', term] as const,
+    albumsByArtist: (artistId: number) => [LIDARR_QUERY_KEY, 'albumsByArtist', artistId] as const,
     artist: (artistId: number) => [LIDARR_QUERY_KEY, 'artist', artistId] as const,
+    artistByMbid: (mbid: string) => [LIDARR_QUERY_KEY, 'artistByMbid', mbid] as const,
     artistLookup: (term: string) => [LIDARR_QUERY_KEY, 'artistLookup', term] as const,
 };
 
@@ -53,6 +65,16 @@ export const lidarrQueries = {
             queryKey: lidarrQueryKeys.albumLookup(args.term),
         });
     },
+    albumsByArtist: (args: AlbumsByArtistArgs) => {
+        return queryOptions({
+            enabled: args.enabled,
+            queryFn: async () => {
+                const config = useLidarrStore.getState();
+                return lidarrClient.getAlbumsByArtist(config.url, config.apiKey, args.artistId);
+            },
+            queryKey: lidarrQueryKeys.albumsByArtist(args.artistId),
+        });
+    },
     artist: (args: ArtistArgs) => {
         return queryOptions({
             enabled: args.enabled,
@@ -61,6 +83,16 @@ export const lidarrQueries = {
                 return lidarrClient.getArtist(config.url, config.apiKey, args.artistId);
             },
             queryKey: lidarrQueryKeys.artist(args.artistId),
+        });
+    },
+    artistByMbid: (args: ArtistByMbidArgs) => {
+        return queryOptions({
+            enabled: args.enabled && args.mbid.length > 0,
+            queryFn: async () => {
+                const config = useLidarrStore.getState();
+                return lidarrClient.getArtistByMbid(config.url, config.apiKey, args.mbid);
+            },
+            queryKey: lidarrQueryKeys.artistByMbid(args.mbid),
         });
     },
     artistLookup: (args: ArtistLookupArgs) => {

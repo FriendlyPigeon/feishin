@@ -71,6 +71,23 @@ export const lidarrClient = {
             throw new Error(message);
         }
     },
+    getAlbumsByArtist: async (
+        url: string,
+        apiKey: string,
+        artistId: number,
+    ): Promise<LidarrAlbum[]> => {
+        try {
+            const response = await axios.get<LidarrAlbum[]>(`${getBaseUrl(url)}/album`, {
+                headers: getHeaders(apiKey),
+                params: { artistId },
+            });
+            return response.data;
+        } catch (error) {
+            const message = handleError(error, 'Failed to fetch Lidarr albums');
+            toast.error({ message });
+            throw new Error(message);
+        }
+    },
     getArtist: async (url: string, apiKey: string, artistId: number): Promise<LidarrArtist> => {
         try {
             const response = await axios.get<LidarrArtist>(
@@ -82,6 +99,23 @@ export const lidarrClient = {
             return response.data;
         } catch (error) {
             const message = handleError(error, 'Failed to fetch Lidarr artist');
+            toast.error({ message });
+            throw new Error(message);
+        }
+    },
+    getArtistByMbid: async (
+        url: string,
+        apiKey: string,
+        mbid: string,
+    ): Promise<LidarrArtist | null> => {
+        try {
+            const response = await axios.get<LidarrArtist[]>(`${getBaseUrl(url)}/artist`, {
+                headers: getHeaders(apiKey),
+                params: { mbId: mbid },
+            });
+            return response.data?.[0] ?? null;
+        } catch (error) {
+            const message = handleError(error, 'Failed to fetch Lidarr artist by MusicBrainz ID');
             toast.error({ message });
             throw new Error(message);
         }

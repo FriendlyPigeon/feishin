@@ -81,6 +81,12 @@ export function useNativeImage({
             return;
         }
 
+        if (request.skipFetch) {
+            loadedRequestSignatureRef.current = requestSignature;
+            setState({ displaySrc: request.url, status: 'loaded' });
+            return;
+        }
+
         abortCurrentRequest();
         revokeObjectUrl();
         setState({ status: 'loading' });
@@ -122,6 +128,17 @@ export function useNativeImage({
                 }
 
                 revokeObjectUrl();
+
+                // Fall back to the original URL. Browsers do not require CORS
+                // headers to render an image in an <img> tag, only to read it
+                // programmatically via fetch/XHR. This keeps images from
+                // servers like Lidarr working when they omit CORS headers.
+                if (request.url) {
+                    loadedRequestSignatureRef.current = requestSignature;
+                    setState({ displaySrc: request.url, status: 'loaded' });
+                    return;
+                }
+
                 setState({ status: 'error' });
                 onFetchErrorRef.current?.();
             } finally {

@@ -1714,6 +1714,7 @@ export type ImageRequest = {
     cacheKey: string;
     credentials?: RequestCredentials;
     headers?: Record<string, string>;
+    skipFetch?: boolean;
     url: string;
 };
 
