@@ -38,13 +38,13 @@ export const useAddArtistMutation = () => {
 
             return lidarrClient.addArtist(config.url, config.apiKey, {
                 addOptions: {
-                    monitor: 'all',
-                    searchForMissingAlbums: false,
+                    monitor: config.artistMonitorMode,
+                    searchForMissingAlbums: config.searchForMissingAlbums,
                 },
                 artistName,
                 foreignArtistId: artistMbid,
                 metadataProfileId: defaults.metadataProfileId,
-                monitored: true,
+                monitored: config.artistMonitorMode !== 'none',
                 qualityProfileId: defaults.qualityProfileId,
                 rootFolderPath: defaults.rootFolderPath,
             });

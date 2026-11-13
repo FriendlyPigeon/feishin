@@ -257,6 +257,60 @@ export const LidarrSettingsSection = memo(() => {
             isHidden: !config.enabled,
             title: t('setting.lidarr.metadataProfile'),
         },
+        {
+            control: (
+                <Select
+                    data={[
+                        {
+                            label: t('setting.lidarr.artistMonitorMode', {
+                                context: 'optionNone',
+                            }),
+                            value: 'none',
+                        },
+                        {
+                            label: t('setting.lidarr.artistMonitorMode', {
+                                context: 'optionAll',
+                            }),
+                            value: 'all',
+                        },
+                        {
+                            label: t('setting.lidarr.artistMonitorMode', {
+                                context: 'optionFuture',
+                            }),
+                            value: 'future',
+                        },
+                    ]}
+                    onChange={(value) => {
+                        if (value) {
+                            setDefaults({
+                                artistMonitorMode: value as 'all' | 'future' | 'none',
+                            });
+                        }
+                    }}
+                    value={defaults.artistMonitorMode}
+                />
+            ),
+            description: t('setting.lidarr.artistMonitorMode', {
+                context: 'description',
+            }),
+            isHidden: !config.enabled,
+            title: t('setting.lidarr.artistMonitorMode'),
+        },
+        {
+            control: (
+                <Switch
+                    checked={defaults.searchForMissingAlbums}
+                    onChange={(e) => {
+                        setDefaults({ searchForMissingAlbums: e.currentTarget.checked });
+                    }}
+                />
+            ),
+            description: t('setting.lidarr.searchForMissingAlbums', {
+                context: 'description',
+            }),
+            isHidden: !config.enabled,
+            title: t('setting.lidarr.searchForMissingAlbums'),
+        },
     ];
 
     return <SettingsSection options={options} title={t('setting.lidarr.title')} />;

@@ -1362,7 +1362,14 @@
             "qualityProfile_placeholder": "Select a quality profile",
             "metadataProfile": "Metadata profile",
             "metadataProfile_description": "The metadata profile to use when adding artists",
-            "metadataProfile_placeholder": "Select a metadata profile"
+            "metadataProfile_placeholder": "Select a metadata profile",
+            "artistMonitorMode": "Artist monitor mode",
+            "artistMonitorMode_description": "Which albums to monitor when adding an artist. Default is None",
+            "artistMonitorMode_optionNone": "None",
+            "artistMonitorMode_optionAll": "All albums",
+            "artistMonitorMode_optionFuture": "Future albums",
+            "searchForMissingAlbums": "Search for missing albums after adding",
+            "searchForMissingAlbums_description": "Run a search for monitored albums when adding an artist"
         }
     },
     "success": {

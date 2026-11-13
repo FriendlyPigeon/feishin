@@ -3,6 +3,8 @@ import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { createWithEqualityFn } from 'zustand/traditional';
 
+export type LidarrArtistMonitorMode = 'all' | 'future' | 'none';
+
 export interface LidarrConfig {
     apiKey: string;
     enabled: boolean;
@@ -16,9 +18,11 @@ export interface LidarrConnectionStatus {
 }
 
 export interface LidarrDefaults {
+    artistMonitorMode: LidarrArtistMonitorMode;
     metadataProfileId: null | number;
     qualityProfileId: null | number;
     rootFolderPath: null | string;
+    searchForMissingAlbums: boolean;
 }
 
 export interface LidarrSlice extends LidarrState {
@@ -34,9 +38,11 @@ export interface LidarrState extends LidarrConfig, LidarrDefaults {
 }
 
 const initialDefaults: LidarrDefaults = {
+    artistMonitorMode: 'none',
     metadataProfileId: null,
     qualityProfileId: null,
     rootFolderPath: null,
+    searchForMissingAlbums: false,
 };
 
 const initialState: LidarrState = {
@@ -100,9 +106,11 @@ export const useLidarrConfig = (): LidarrConfig =>
 
 export const useLidarrDefaults = (): LidarrDefaults =>
     useLidarrStore((state) => ({
+        artistMonitorMode: state.artistMonitorMode,
         metadataProfileId: state.metadataProfileId,
         qualityProfileId: state.qualityProfileId,
         rootFolderPath: state.rootFolderPath,
+        searchForMissingAlbums: state.searchForMissingAlbums,
     }));
 
 export const useLidarrStatus = () => useLidarrStore((state) => state.status);

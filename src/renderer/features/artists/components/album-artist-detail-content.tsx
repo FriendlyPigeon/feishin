@@ -1341,12 +1341,14 @@ export const AlbumArtistDetailContent = ({
                         />
                     )}
                     <ArtistAlbums albumsQuery={albumsQuery} order={itemOrder.recentAlbums} />
-                    <LidarrArtistDiscography
-                        artistMbid={detailQuery.data?.mbz || undefined}
-                        artistName={detailQuery.data?.name || ''}
-                        libraryAlbums={albumsQuery.data?.items || []}
-                        order={itemOrder.recentAlbums}
-                    />
+                    {enabledItem.lidarrMissingAlbums && (
+                        <LidarrArtistDiscography
+                            artistMbid={detailQuery.data?.mbz || undefined}
+                            artistName={detailQuery.data?.name || ''}
+                            libraryAlbums={albumsQuery.data?.items || []}
+                            order={itemOrder.lidarrMissingAlbums}
+                        />
+                    )}
                     {enabledItem.similarArtists && (
                         <AlbumArtistMetadataSimilarArtists
                             order={itemOrder.similarArtists}

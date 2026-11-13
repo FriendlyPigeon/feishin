@@ -14,6 +14,7 @@ const ARTIST_ITEMS: Array<[ArtistItem, string]> = [
     [ArtistItem.FAVORITE_SONGS, 'page.albumArtistDetail.favoriteSongs'],
     [ArtistItem.TOP_SONGS, 'page.albumArtistDetail.topSongs'],
     [ArtistItem.RECENT_ALBUMS, 'page.albumArtistDetail.recentReleases'],
+    [ArtistItem.LIDARR_MISSING_ALBUMS, 'page.albumArtistDetail.lidarrMissingAlbums'],
     [ArtistItem.SIMILAR_ARTISTS, 'page.albumArtistDetail.relatedArtists'],
 ];
 

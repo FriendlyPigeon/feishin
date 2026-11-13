@@ -122,10 +122,12 @@ const LidarrAlbumSection = memo(function LidarrAlbumSection({
         <Stack gap="md">
             <div className={styles.albumSectionTitle}>
                 <Group gap="md">
-                    <TextTitle fw={700} order={3}>
+                    <TextTitle fw={600} order={4}>
                         {title}
                     </TextTitle>
-                    <Badge variant="default">{albums.length}</Badge>
+                    <Badge size="sm" variant="default">
+                        {albums.length}
+                    </Badge>
                 </Group>
                 <div className={styles.albumSectionDivider} />
             </div>

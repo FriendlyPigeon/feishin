@@ -112,6 +112,7 @@ const ArtistItemSchema = z.enum([
     'biography',
     'compilations',
     'favoriteSongs',
+    'lidarrMissingAlbums',
     'recentAlbums',
     'similarArtists',
     'topSongs',
@@ -880,6 +881,7 @@ export enum AlbumGroupItem {
 export enum ArtistItem {
     BIOGRAPHY = 'biography',
     FAVORITE_SONGS = 'favoriteSongs',
+    LIDARR_MISSING_ALBUMS = 'lidarrMissingAlbums',
     RECENT_ALBUMS = 'recentAlbums',
     SIMILAR_ARTISTS = 'similarArtists',
     TOP_SONGS = 'topSongs',
@@ -2933,10 +2935,23 @@ export const useSettingsStore = createWithEqualityFn<SettingsSlice>()(
                     });
                 }
 
+                if (version < 35) {
+                    const hasLidarrMissingAlbums = state.general.artistItems?.some(
+                        (item) => item.id === ArtistItem.LIDARR_MISSING_ALBUMS,
+                    );
+
+                    if (!hasLidarrMissingAlbums) {
+                        state.general.artistItems.push({
+                            disabled: false,
+                            id: ArtistItem.LIDARR_MISSING_ALBUMS,
+                        });
+                    }
+                }
+
                 return persistedState;
             },
             name: 'store_settings',
-            version: 34,
+            version: 35,
         },
     ),
 );
