@@ -1099,6 +1099,16 @@ export const getDataRows = (type?: 'compact' | 'default' | 'poster'): DataRow[] 
                         if ('_itemType' in data) {
                             switch (data._itemType) {
                                 case LibraryItem.ALBUM:
+                                    if ('missing' in data && data.missing) {
+                                        return (
+                                            <>
+                                                <ExplicitIndicator
+                                                    explicitStatus={explicitStatus}
+                                                />
+                                                {data.name}
+                                            </>
+                                        );
+                                    }
                                     return (
                                         <Link
                                             state={{ item: data }}
